@@ -1,9 +1,0 @@
-/.vscode
-/dist
-/janusec
-/luci
-/config.json
-/log/*
-*.zip
-*.tar.gz
-/static/cdncache
