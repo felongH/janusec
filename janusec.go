@@ -11,7 +11,6 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/gob"
-	"flag"
 	"fmt"
 	"net"
 	"net/http"
@@ -32,12 +31,8 @@ import (
 )
 
 func main() {
-	ver := flag.Bool("version", false, "Display Version Information")
-	flag.Parse()
-	if *ver {
-		fmt.Println(data.Version)
-		os.Exit(0)
-	}
+
+	//切换工作目录到可执行文件所在目录
 	dir, _ := os.Executable()
 	exePath := filepath.Dir(dir)
 	err := os.Chdir(exePath)
@@ -46,10 +41,14 @@ func main() {
 		os.Exit(1)
 	}
 	runtime.GOMAXPROCS(runtime.NumCPU())
+
+	//初始化日志文件
 	utils.InitLogger()
+
+	//设置环境变量
 	SetOSEnv()
 
-	utils.DebugPrintln("Janusec Application Gateway", data.Version, "Starting ...")
+	utils.DebugPrintln("DP-ZT 应用网关", data.Version, "启动 ...")
 	if utils.Debug {
 		utils.DebugPrintln("Warning: Janusec is running in Debug mode.")
 	}

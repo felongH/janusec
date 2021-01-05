@@ -14,7 +14,7 @@
 			"host": "127.0.0.1",
 			"port": "5432",
 			"user": "janusec",
-			"password": "123456",
+			"password": "e6d1b9e754f2d72915ed933358bfc22a91c87c81732f1d32141555f04af90ecfaf5b",
 			"dbname": "janusec"
 		},
 		"oauth": {
