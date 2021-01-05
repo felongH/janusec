@@ -157,6 +157,7 @@ func main() {
 	gateMux.Handle("/captcha/png/", gateway.ShowCaptchaImage())
 
 	// Reverse Proxy
+	fmt.Printf("服务已启动\n")
 	gateMux.HandleFunc("/", gateway.ReverseHandlerFunc)
 	ctxGateMux := AddContextHandler(gateMux)
 	go func(listenPort string) {

@@ -56,6 +56,7 @@ func Counter() {
 
 // ReverseHandlerFunc used for reverse handler
 func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("\n\n>>>>> 访问URL：%s%s\n", (*r).Host,(*r).RequestURI);
 	// inc concurrency
 	incChan <- 1
 	defer func() {
@@ -67,23 +68,28 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 		r.Host = r.Host[0:index]
 	}
 	domain := backend.GetDomainByName(r.Host)
+	 if domain != nil {
+		fmt.Printf("      域名信息,id:%d,Name:%s,AppID:%d,CertID:%d\n", domain.ID, domain.Name, domain.AppID, domain.CertID);
+	}
+
 	if domain != nil && domain.Redirect == true {
+		//找到了域名并且开启了重定向则重定向至相关的URL
 		RedirectRequest(w, r, domain.Location)
+		fmt.Printf("      重定向至URL:%s\n\n", domain.Location);
 		return
 	}
 	app := backend.GetApplicationByDomain(r.Host)
 	if app == nil {
-		// Static Web site
-		staticHandler := http.FileServer(http.Dir("./static/welcome"))
-		if strings.HasSuffix(r.URL.Path, "/") {
-			targetFile := "./static/welcome" + r.URL.Path + "index.html"
-			http.ServeFile(w, r, targetFile)
-			return
-		}
-		staticHandler.ServeHTTP(w, r)
+		// 未找到对应的APP，则重定向到主页
+		fmt.Printf("      未命中任何应用,访问主页\n\n")
+		http.ServeFile(w, r, "./static/welcome/index.html")
 		return
 	}
+
+	fmt.Printf("      App信息,id:%d,Name:%s,HTTPS：%t\n", app.ID, app.Name, r.TLS == nil);
+
 	if (r.TLS == nil) && (app.RedirectHTTPS == true) {
+		fmt.Printf("      访问非HTTPS，重定向至HTTPS\n\n");
 		RedirectRequest(w, r, "https://"+r.Host+r.URL.Path)
 		return
 	}
@@ -95,6 +101,8 @@ func ReverseHandlerFunc(w http.ResponseWriter, r *http.Request) {
 	// dynamic
 	srcIP := GetClientIP(r, app)
 	isStatic := firewall.IsStaticResource(r)
+
+	//检测是否属于攻击
 	if app.WAFEnabled && !isStatic {
 		if isCC, ccPolicy, clientID, needLog := firewall.IsCCAttack(r, app.ID, srcIP); isCC == true {
 			targetURL := r.URL.Path
